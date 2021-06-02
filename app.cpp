@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <iostream>
 #include <string.h>
@@ -21,11 +23,36 @@ using namespace chrono;
 // }
 
 class Task {
-    
+public: 
+    string processName; 
+    string killTime; 
+
+//Task constructor
+    Task(string Name,string Time) {
+        processName = Name; 
+        killTime = Time; 
+    }
+
+//If we want to edit the time. 
+    void SetTime(string time){ 
+        killTime = time; 
+    }
 }; 
+
 
 int main()
 {
+
+/*
+if(new task button press){
+    vector<Task> TaskList[]; 
+
+    TaskList.push_back(new Task(processName, killTime)); //Create a new Task 
+
+}
+
+delete TaskList; 
+*/
 
     //initialize time
     auto start = system_clock::now();
