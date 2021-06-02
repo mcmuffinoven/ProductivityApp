@@ -1,2 +1,0 @@
-C:\Users\user\Desktop\stuff\wxWidget\Productivity\Debug\Productivity.exe
-C:\Users\user\Desktop\stuff\wxWidget\Productivity\Debug\Productivity.pdb
