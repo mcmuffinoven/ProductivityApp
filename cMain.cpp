@@ -4,96 +4,115 @@ wxBEGIN_EVENT_TABLE(cMain, wxFrame)
 EVT_BUTTON(10001, OnButtonClicked) //Link ID to a specific function 
 wxEND_EVENT_TABLE()
 
-cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Game of Life", wxPoint(30,30), wxSize(800, 1000) ) {
+cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Game of Life", wxPoint(30,30), wxSize(800, 500) ) {
 	//m_btn1 = new wxButton(this, 10001, "Click me", wxPoint(10, 10), wxSize(150, 50));
 	//m_txt1 = new wxTextCtrl(this, wxID_ANY, "", wxPoint(10, 70), wxSize(300, 30));
 	//m_list1 = new wxListBox(this, wxID_ANY, wxPoint(10, 110), wxSize(300, 300));
-	/*
-	wxPanel* panel = new wxPanel(this, -1);
-
-	wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
-	wxBoxSizer* hbox1 = new wxBoxSizer(wxHORIZONTAL);
-
-	wxStaticText* st1 = new wxStaticText(panel, wxID_ANY,wxT("Process Name"));
-	wxStaticText* st2 = new wxStaticText(panel, wxID_ANY, wxT("Set Time"));
-
-	hbox1->Add(st1, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 20);
-	hbox1->Add(st2, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 20);
-
-	vbox->Add(hbox1, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-	vbox->Add(-1, 10);
-
-	wxBoxSizer* hbox2 = new wxBoxSizer(wxHORIZONTAL);
-	wxTextCtrl* tc1 = new wxTextCtrl(panel, wxID_ANY, wxT(""),wxPoint(-1, -1), wxSize(-1, -1));
-	wxTextCtrl* tc2 = new wxTextCtrl(panel, wxID_ANY, wxT(""),wxPoint(-1, -1), wxSize(-1, -1));
-	wxTextCtrl* tc3 = new wxTextCtrl(panel, wxID_ANY, wxT(""),wxPoint(-1, -1), wxSize(-1, -1));
-
-	hbox2->Add(tc1, 5, wxEXPAND | wxRIGHT, 20);
-	hbox2->Add(tc2, 1, wxEXPAND | wxRIGHT, 20);
-	hbox2->Add(tc3, 1, wxEXPAND | wxRIGHT, 20);
-
-	vbox->Add(hbox2, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-
-
-
-	panel->SetSizer(vbox);
-	*/
-
-	//wxPanel* leftpanel = new wxPanel(this, -1);
-	//wxPanel* rightpanel = new wxPanel(this, -1);
-	//wxPanel* panel = new wxPanel(this, -1);
-
+	
 	//leftpanel->SetBackgroundColour(wxColor(100, 100, 200));
 	//rightpanel->SetBackgroundColour(wxColor(100, 200, 100));
 
-	//wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
-	wxBoxSizer* hbox1 = new wxBoxSizer(wxHORIZONTAL);
 
-	wxBoxSizer* vbox1 = new wxBoxSizer(wxVERTICAL);
-	wxBoxSizer* vbox2 = new wxBoxSizer(wxVERTICAL);
 
-	hbox1->Add(vbox1, 1, wxEXPAND | wxALL, 10 ); 
-	hbox1->Add(vbox2, 1, wxEXPAND | wxALL, 10);
+	//Create horizontal sizer
+	wxBoxSizer* fullhbox = new wxBoxSizer(wxHORIZONTAL);
 
+	//Create vertical sizers for each coloumn of the GUI
+	wxBoxSizer* leftvbox = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* rightvbox = new wxBoxSizer(wxVERTICAL);
+
+	//Add the leftvbox first, then the right into the horizontal sizer, creating two divisions. 
+	fullhbox->Add(leftvbox, 1, wxEXPAND | wxALL, 10 );
+	fullhbox->Add(rightvbox, 1, wxEXPAND | wxALL, 10);
+
+	//Create static text
 	wxStaticText* st1 = new wxStaticText(this, wxID_ANY, wxT("Process Name"));
 	wxStaticText* st2 = new wxStaticText(this, wxID_ANY, wxT("Set Time"));
 
-	vbox1->Add(st1, 0, wxEXPAND | wxALL, 10); 
-	vbox2->Add(st2, 0, wxEXPAND | wxALL, 10);
+	//Add text to each side of the GUI
+	leftvbox->Add(st1, 0, wxEXPAND | wxALL, 10); 
+	rightvbox->Add(st2, 0, wxEXPAND | wxALL, 10);
 
-	wxTextCtrl* tc1 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1));
-	wxTextCtrl* tc2 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1));
-	wxTextCtrl* tc3 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1));
-	wxBoxSizer* hbox2 = new wxBoxSizer(wxHORIZONTAL);
+	//Create text boxes for user input
+	wxTextCtrl* tc1 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Process Name
+	wxTextCtrl* tc2 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Hr
+	wxTextCtrl* tc3 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Min
 
-	vbox1->Add(tc1, 0, wxEXPAND);
+	//Create horizontal sizer to add the timer text boxes. 
+	wxBoxSizer* righthbox1 = new wxBoxSizer(wxHORIZONTAL);
 
-	hbox2->Add(tc2, 0, wxEXPAND | wxRIGHT, 10);
-	hbox2->Add(tc3, 0, wxEXPAND);
+	//Add process name text box to leftvbox
+	leftvbox->Add(tc1, 0, wxEXPAND);
 
-	vbox2->Add(hbox2, 0, wxEXPAND);
+	//Add the two text boxes into a horizontal sizer
+	righthbox1->Add(tc2, 0, wxEXPAND | wxRIGHT, 10);
+	righthbox1->Add(tc3, 0, wxEXPAND);
 
+	//Add the first horizontal sizer into rightvhox
+	rightvbox->Add(righthbox1, 0, wxEXPAND);
 
+	//Create static text
+	wxStaticText* st3 = new wxStaticText(this, wxID_ANY, wxT("Scheduled Tasks"));
+	wxStaticText* st4 = new wxStaticText(this, wxID_ANY, wxT("Work Time"));
+	wxStaticText* st5 = new wxStaticText(this, wxID_ANY, wxT("Rest Time"));
 
-	this->SetSizer(hbox1);
-/*	
-	wxColour col1, col2, col3;
-	col1.Set(wxT("#d46911"));
-	col2.Set(wxT("#30b828"));
-	col3.Set(wxT("#de1058"));
-	wxPanel* panel = new wxPanel(this, wxID_ANY,wxDefaultPosition, wxSize(200,100));
-	panel->SetBackgroundColour(col1);
+	//Add text to each side of the GUI
+	leftvbox->Add(st3, 0, wxEXPAND | wxALL, 10);
+	
+	//Create horizontal sizer to add the Work/Rest time text
+	wxBoxSizer* righthbox2 = new wxBoxSizer(wxHORIZONTAL);
 
-	wxPanel* panel2 = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(200, 100));
-	wxPanel* panel3 = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(200, 100));
-	panel2->SetBackgroundColour(col2);
-	panel3->SetBackgroundColour(col3);
+	//Add the work/rest time text into the right horizontal sizer
+	righthbox2->Add(st4, 1, wxEXPAND | wxALL, 10);
+	righthbox2->Add(st5, 2, wxEXPAND | wxALL, 10);
 
-	sizer->Add(panel, 1, wxEXPAND | wxALL, 20);
-	sizer->Add(panel2, 1, wxEXPAND | wxALL, 20);
-	sizer->Add(panel3, 1, wxEXPAND | wxALL, 20);
+	//Add the second horizontal sizer into the rightvbox
+	rightvbox->Add(righthbox2, 0, wxEXPAND);
 
-	this->SetSizerAndFit(sizer); */
+	//Create text boxes for user input
+	wxTextCtrl* tc4 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Scheduled Task, NEED TO REPLACE WITH TEXT BOX LATER TO SHOW SCHEDULED TASKS 
+	wxTextCtrl* tc5 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Work time
+	wxTextCtrl* tc6 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Rest time
+
+	//Add the scheduled tasks box to the leftvbox
+	leftvbox->Add(tc4, 1, wxEXPAND);
+
+	//Create horizontal sizer to add the Work/Rest time textbox
+	wxBoxSizer* righthbox3 = new wxBoxSizer(wxHORIZONTAL);
+
+	//Add the work rest time textbox
+	righthbox3->Add(tc5, 0, wxEXPAND | wxRIGHT, 10);
+	righthbox3->Add(tc6, 0, wxEXPAND);
+	
+	//Add horizontal sizer to rightvbox
+	rightvbox->Add(righthbox3, 0, wxEXPAND);
+
+	//Create a spacer sizer to fix a panel that stretches all the way, so the submit button appears at the very bottom of the GUI
+	wxBoxSizer* spacerbox = new wxBoxSizer(wxHORIZONTAL);
+
+	//Add panel into the spacer
+	spacerbox->Add(new wxPanel(this, -1));
+
+	//Add spacer into rightvbox
+	rightvbox->Add(spacerbox, 1, wxEXPAND);
+
+	//Add horizontal sizer for submit button
+	wxBoxSizer* rightthbox4 = new wxBoxSizer(wxHORIZONTAL);
+	
+	//Create submit button
+	wxButton* btn1 = new wxButton(this, wxID_ANY, wxT("Submit Task"));
+
+	//Add button to horizontal sizer
+	rightthbox4->Add(btn1, 0);
+	
+	//Add button to rightvhox
+	rightvbox->Add(rightthbox4, 0, wxALIGN_RIGHT | wxRIGHT, 10);
+
+	//Set the sizer of the GUI to fullhbox 
+	this->SetSizer(fullhbox);
+
+	//Center app popup
+	Centre(); 
 
 }
 
