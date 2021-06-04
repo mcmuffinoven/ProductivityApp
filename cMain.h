@@ -9,7 +9,10 @@ public:
 public:
 //	wxButton* m_btn1 = nullptr;
 //	wxTextCtrl* m_txt1 = nullptr;
-//	wxListBox* m_list1 = nullptr;
+
+	//Define variables to be used. 
+	wxTextCtrl* tc1 = nullptr; 
+	wxListBox* list = nullptr;
 	wxBoxSizer* sizer = nullptr;
 
 	int nFieldWidth = 10;
