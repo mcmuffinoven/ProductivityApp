@@ -1,11 +1,43 @@
 #include "cMain.h"
+#include "Task.h"
 
 wxBEGIN_EVENT_TABLE(cMain, wxFrame)
 EVT_BUTTON(10001, OnButtonClicked) //Link ID to a specific function 
 wxEND_EVENT_TABLE()
 
 cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), wxSize(800, 500) ) {
-	
+	string command; 
+	command = "tasklist";
+	wxArrayString tasks;
+	system((command + " > temp.txt").c_str());
+
+	std::ifstream ifs("temp.txt");
+	std::string ret{ std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>() };
+
+	ifs.close(); // must close the inout stream so the file can be cleaned up
+
+	vector<string> names;
+	ifstream infile("temp.txt");
+
+
+	if (!infile)
+	{
+		wxArrayString error;
+		error.Add(wxT("error"));
+	}
+	string line, nm;
+	while (getline(infile, line))
+	{
+		stringstream(line) >> nm;
+		names.push_back(nm);
+	}
+
+	for (string s : names) {
+		wxString mystring(s);
+		tasks.Add(mystring);
+	}
+
+
 	//Create horizontal sizer for entire GUI
 	wxBoxSizer* fullhbox = new wxBoxSizer(wxHORIZONTAL);
 
@@ -26,15 +58,17 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	rightvbox->Add(st2, 0, wxEXPAND | wxTOP | wxRIGHT, 10);
 
 	//Create text boxes for user input
-	tc1 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Process Name
-	wxTextCtrl* tc2 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Hr
-	wxTextCtrl* tc3 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Min
+
+	dropdown = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, tasks, 0, wxDefaultValidator, _T("ID_COMBOBOX1"));
+	//tc1 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Process Name
+	tc2 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Hr
+	tc3 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Min
 
 	//Create horizontal sizer to add the timer text boxes. 
 	wxBoxSizer* righthbox1 = new wxBoxSizer(wxHORIZONTAL);
 
 	//Add process name text box to leftvbox
-	leftvbox->Add(tc1, 0, wxEXPAND);
+	leftvbox->Add(dropdown, 0, wxEXPAND);
 
 	//Add the two text boxes into a horizontal sizer
 	righthbox1->Add(tc2, 0, wxEXPAND | wxRIGHT, 10);
@@ -61,7 +95,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	//Add the second horizontal sizer into the rightvbox
 	rightvbox->Add(righthbox2, 0, wxEXPAND);
 
-	//Create text boxes for user input
+	//Create text boxes for user inpt
 	list = new wxListBox(this, wxID_ANY, wxPoint(-1, -1), wxSize(-1, -1)); //Scheduled Task, NEED TO REPLACE WITH TEXT BOX LATER TO SHOW SCHEDULED TASKS 
 	wxTextCtrl* tc5 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Work time
 	wxTextCtrl* tc6 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Rest time
@@ -109,7 +143,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	//Create font class so we can set our text to this font
 	wxFont font(14, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false); 
 
-	tc1->SetFont(font); 
+	//tc1->SetFont(font); 
 	tc2->SetFont(font);
 	tc3->SetFont(font);
 	tc5->SetFont(font);
@@ -129,8 +163,54 @@ cMain::~cMain() {
 
 void cMain::OnButtonClicked(wxCommandEvent& evt) {
 
-	list->AppendString(tc1->GetValue());
+	string processName; 
+	string killTime_hr; 
+	string killTime_min;
+
+	processName = dropdown->GetValue(); 
+	killTime_hr = tc2->GetValue(); 
+	killTime_min = tc2->GetValue();
+
+	list->AppendString(processName);
+
+
 	evt.Skip(); //Event has been handeled. 
+}
+
+
+wxArrayString execute(const std::string& command)
+{
+	wxArrayString tasks; 
+	system((command + " > temp.txt").c_str());
+
+	std::ifstream ifs("temp.txt");
+	std::string ret{ std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>() };
+
+	ifs.close(); // must close the inout stream so the file can be cleaned up
+
+	vector<string> names;
+	ifstream infile("temp.txt");
+
+
+	if (!infile)
+	{
+		wxArrayString error;
+		error.Add(wxT("error"));
+		return error; 
+	}
+	string line, nm;
+	while (getline(infile, line))
+	{
+		stringstream(line) >> nm;
+		names.push_back(nm);
+	}
+
+	for (string s : names) {
+		wxString mystring(s);
+		tasks.Add(mystring); 
+	}
+
+	return tasks;
 }
 
 /*
