@@ -1,42 +1,54 @@
 #include "cMain.h"
 #include "Task.h"
 
+
 wxBEGIN_EVENT_TABLE(cMain, wxFrame)
 EVT_BUTTON(10001, OnButtonClicked) //Link ID to a specific function 
 wxEND_EVENT_TABLE()
 
-cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), wxSize(800, 500) ) {
+//Create Vector of Tasks
+vector<Task*> TaskList; 
+
+wxArrayString execute(const std::string& command);
+
+//Time Checking Thread 
+
+void checkTime() {
+
+	//initialize time
+	auto start = system_clock::now();
+	// Some computation here
+	auto end = system_clock::now();
+
+	duration<double> elapsed_seconds = end - start;
+	time_t end_time = system_clock::to_time_t(end);
+	string cProcess;
 	string command; 
-	command = "tasklist";
-	wxArrayString tasks;
-	system((command + " > temp.txt").c_str());
+	while (1) { //if time is equal to set time exit out of loop, otherwise wait
+		auto start = system_clock::now();
+		// Some computation here
+		auto end = system_clock::now();
 
-	std::ifstream ifs("temp.txt");
-	std::string ret{ std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>() };
+		duration<double> elapsed_seconds = end - start;
+		time_t end_time = system_clock::to_time_t(end);
+		//cout << ctime(&end_time) << "\n";
 
-	ifs.close(); // must close the inout stream so the file can be cleaned up
-
-	vector<string> names;
-	ifstream infile("temp.txt");
-
-
-	if (!infile)
-	{
-		wxArrayString error;
-		error.Add(wxT("error"));
-	}
-	string line, nm;
-	while (getline(infile, line))
-	{
-		stringstream(line) >> nm;
-		names.push_back(nm);
+		if ((strcmp(ctime(&end_time), "Fri May 28 15:37:00 2021\n")) == 0) { // Need to make the comparison, to a changeable variable set by user.
+			command = "taskkill /IM " + cProcess + " /F " + "/t";
+			system(command.c_str()); //Kill process at designated time. 
+			return 0;
+		}
 	}
 
-	for (string s : names) {
-		wxString mystring(s);
-		tasks.Add(mystring);
-	}
+}
 
+cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), wxSize(800, 500) ) {
+	
+	wxArrayString tasks; 
+	tasks = execute("tasklist"); 
+
+	//Spawn Thread 
+	thread thread_1(checkTime); 
 
 	//Create horizontal sizer for entire GUI
 	wxBoxSizer* fullhbox = new wxBoxSizer(wxHORIZONTAL);
@@ -155,6 +167,9 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	st3->SetFont(font);
 	st4->SetFont(font);
 	st5->SetFont(font);
+
+	//Wait for thread
+	thread_1.join();
 }
 
 cMain::~cMain() {
@@ -167,11 +182,17 @@ void cMain::OnButtonClicked(wxCommandEvent& evt) {
 	string killTime_hr; 
 	string killTime_min;
 
+	//Update scheduled tasks according to user input when submit button is pressed
 	processName = dropdown->GetValue(); 
 	killTime_hr = tc2->GetValue(); 
 	killTime_min = tc2->GetValue();
 
 	list->AppendString(processName);
+
+	TaskList.push_back(new Task(processName, killTime_hr, killTime_min)); //Create a new Task 
+
+
+
 
 
 	evt.Skip(); //Event has been handeled. 

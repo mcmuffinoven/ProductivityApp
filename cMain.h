@@ -45,7 +45,7 @@ public:
 	//int* nField = nullptr;
 	//bool bFirstClick = true;
 
-	wxArrayString execute(const std::string& command);
+	//wxArrayString execute(const std::string& command);
 	void OnButtonClicked(wxCommandEvent& evt);
 	
 	
