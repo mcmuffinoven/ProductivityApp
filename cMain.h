@@ -30,9 +30,9 @@ public:
 	wxComboBox* dropdown = nullptr; 
 
 	wxTextCtrl* tc1 = nullptr; 
-	wxTextCtrl* tc2 = nullptr;
-	wxTextCtrl* tc3 = nullptr; 
-
+	wxTextCtrl* tc_day = nullptr; 
+	wxTextCtrl* tc_hr = nullptr;
+	wxTextCtrl* tc_min = nullptr; 
 
 
 	wxListBox* list = nullptr;

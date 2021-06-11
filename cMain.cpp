@@ -15,31 +15,37 @@ wxArrayString execute(const std::string& command);
 
 void checkTime() {
 
-	//initialize time
-	auto start = system_clock::now();
-	// Some computation here
-	auto end = system_clock::now();
-
-	duration<double> elapsed_seconds = end - start;
-	time_t end_time = system_clock::to_time_t(end);
+	//Command Variables
 	string cProcess;
 	string command; 
+
+	//Timer Variables
+	time_t now;
+	struct tm killTime;
+	double seconds;
+
 	while (1) { //if time is equal to set time exit out of loop, otherwise wait
-		auto start = system_clock::now();
-		// Some computation here
-		auto end = system_clock::now();
+		for (int i = 0; i < TaskList.size(); i++) {
 
-		duration<double> elapsed_seconds = end - start;
-		time_t end_time = system_clock::to_time_t(end);
-		//cout << ctime(&end_time) << "\n";
+			killTime = *localtime(&now);
 
-		if ((strcmp(ctime(&end_time), "Fri May 28 15:37:00 2021\n")) == 0) { // Need to make the comparison, to a changeable variable set by user.
-			command = "taskkill /IM " + cProcess + " /F " + "/t";
-			system(command.c_str()); //Kill process at designated time. 
-			return 0;
+			killTime.tm_hour = stoi(TaskList[i]->killTime_hr); killTime.tm_min = stoi(TaskList[i]->killTime_min); killTime.tm_sec = 0;
+			killTime.tm_mday = stoi(TaskList[i]->killTime_day);
+
+			TaskList[i]->identify();
+
+			seconds = difftime(now, mktime(&killTime));
+
+			if (seconds >= 0) { // Need to make the comparison, to a changeable variable set by user.
+				command = "taskkill /IM " + cProcess + " /F " + "/t";
+				system(command.c_str()); //Kill process at designated time. 
+				break;
+			}
+
+			//check every second
+			this_thread::sleep_for(1s);
 		}
 	}
-
 }
 
 cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), wxSize(800, 500) ) {
@@ -48,7 +54,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	tasks = execute("tasklist"); 
 
 	//Spawn Thread 
-	thread thread_1(checkTime); 
+	//thread thread_1(checkTime); 
 
 	//Create horizontal sizer for entire GUI
 	wxBoxSizer* fullhbox = new wxBoxSizer(wxHORIZONTAL);
@@ -63,7 +69,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 
 	//Create static text
 	wxStaticText* st1 = new wxStaticText(this, wxID_ANY, wxT("Process Name"));
-	wxStaticText* st2 = new wxStaticText(this, wxID_ANY, wxT("Set Time"));
+	wxStaticText* st2 = new wxStaticText(this, wxID_ANY, wxT("Set Time (Day, Hr, Min)"));
 
 	//Add text to each side of the GUI
 	leftvbox->Add(st1, 0, wxEXPAND | wxTOP | wxRIGHT, 10);
@@ -73,8 +79,9 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 
 	dropdown = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, tasks, 0, wxDefaultValidator, _T("ID_COMBOBOX1"));
 	//tc1 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Process Name
-	tc2 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Hr
-	tc3 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Min
+	tc_day = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Day
+	tc_hr = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Hr
+	tc_min = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Min
 
 	//Create horizontal sizer to add the timer text boxes. 
 	wxBoxSizer* righthbox1 = new wxBoxSizer(wxHORIZONTAL);
@@ -83,8 +90,9 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	leftvbox->Add(dropdown, 0, wxEXPAND);
 
 	//Add the two text boxes into a horizontal sizer
-	righthbox1->Add(tc2, 0, wxEXPAND | wxRIGHT, 10);
-	righthbox1->Add(tc3, 0, wxEXPAND);
+	righthbox1->Add(tc_day, 0, wxEXPAND | wxRIGHT, 10);
+	righthbox1->Add(tc_hr, 0, wxEXPAND | wxRIGHT, 10);
+	righthbox1->Add(tc_min, 0, wxEXPAND);
 
 	//Add the first horizontal sizer into rightvhox
 	rightvbox->Add(righthbox1, 0, wxEXPAND);
@@ -109,8 +117,8 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 
 	//Create text boxes for user inpt
 	list = new wxListBox(this, wxID_ANY, wxPoint(-1, -1), wxSize(-1, -1)); //Scheduled Task, NEED TO REPLACE WITH TEXT BOX LATER TO SHOW SCHEDULED TASKS 
-	wxTextCtrl* tc5 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Work time
-	wxTextCtrl* tc6 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Rest time
+	wxTextCtrl* tc_work = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Work time
+	wxTextCtrl* tc_rest = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Rest time
 
 	//Add the scheduled tasks box to the leftvbox
 	leftvbox->Add(list, 1, wxEXPAND);
@@ -119,8 +127,8 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	wxBoxSizer* righthbox3 = new wxBoxSizer(wxHORIZONTAL);
 
 	//Add the work rest time textbox
-	righthbox3->Add(tc5, 0, wxEXPAND | wxRIGHT, 10);
-	righthbox3->Add(tc6, 0, wxEXPAND);
+	righthbox3->Add(tc_work, 0, wxEXPAND | wxRIGHT, 10);
+	righthbox3->Add(tc_rest, 0, wxEXPAND);
 	
 	//Add horizontal sizer to rightvbox
 	rightvbox->Add(righthbox3, 0, wxEXPAND);
@@ -155,11 +163,12 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	//Create font class so we can set our text to this font
 	wxFont font(14, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false); 
 
-	//tc1->SetFont(font); 
-	tc2->SetFont(font);
-	tc3->SetFont(font);
-	tc5->SetFont(font);
-	tc6->SetFont(font);
+	dropdown->SetFont(font); 
+	tc_day->SetFont(font);
+	tc_hr->SetFont(font);
+	tc_min->SetFont(font);
+	tc_work->SetFont(font);
+	tc_rest->SetFont(font);
 	btn1->SetFont(font);
 
 	st1->SetFont(font);
@@ -168,8 +177,9 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	st4->SetFont(font);
 	st5->SetFont(font);
 
+	list->SetFont(font); 
 	//Wait for thread
-	thread_1.join();
+	//thread_1.join();
 }
 
 cMain::~cMain() {
@@ -179,21 +189,19 @@ cMain::~cMain() {
 void cMain::OnButtonClicked(wxCommandEvent& evt) {
 
 	string processName; 
+	string killTime_day; 
 	string killTime_hr; 
 	string killTime_min;
 
 	//Update scheduled tasks according to user input when submit button is pressed
 	processName = dropdown->GetValue(); 
-	killTime_hr = tc2->GetValue(); 
-	killTime_min = tc2->GetValue();
+	killTime_day = tc_day->GetValue(); 
+	killTime_hr = tc_hr->GetValue(); 
+	killTime_min = tc_min->GetValue();
 
 	list->AppendString(processName);
 
-	TaskList.push_back(new Task(processName, killTime_hr, killTime_min)); //Create a new Task 
-
-
-
-
+	TaskList.push_back(new Task(processName, killTime_day, killTime_hr, killTime_min)); //Create a new Task 
 
 	evt.Skip(); //Event has been handeled. 
 }
