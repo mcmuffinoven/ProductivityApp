@@ -1,9 +1,13 @@
 #pragma once
+//Class Header Files
+#include "cThread.h"
+#include "Task.h"
 
 //wxWidget Headers
 #include <wx/wx.h>
 #include <wx/combobox.h>
 #include <wx/string.h>
+#include <wx/timer.h>
 
 //Other Headers 
 #include <stdio.h>
@@ -24,6 +28,9 @@ public:
 	cMain();
 	~cMain();
 
+private: 
+	static const int timerInterval = 1000; //1s
+
 public:
 
 	//Define variables to be used. 
@@ -38,6 +45,8 @@ public:
 	wxListBox* list = nullptr;
 	wxBoxSizer* sizer = nullptr;
 
+	wxTimer* timer = nullptr; 
+	
 	int nFieldWidth = 10;
 	int nFieldHeight = 10;
 	//wxButton** btn;
@@ -47,7 +56,7 @@ public:
 
 	//wxArrayString execute(const std::string& command);
 	void OnButtonClicked(wxCommandEvent& evt);
-	
+	void checkTime(wxTimerEvent& WXUNUSED(event));
 	
 	wxDECLARE_EVENT_TABLE();
 };

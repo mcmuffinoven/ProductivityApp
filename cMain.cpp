@@ -1,9 +1,12 @@
 #include "cMain.h"
 #include "Task.h"
-
+#include "cThread.h"
 
 wxBEGIN_EVENT_TABLE(cMain, wxFrame)
-EVT_BUTTON(10001, OnButtonClicked) //Link ID to a specific function 
+EVT_BUTTON(10001, OnButtonClicked) //Link ID to a specific function
+
+//Timer Event
+EVT_TIMER(wxID_ANY, cMain::checkTime)  
 wxEND_EVENT_TABLE()
 
 //Create Vector of Tasks
@@ -11,50 +14,13 @@ vector<Task*> TaskList;
 
 wxArrayString execute(const std::string& command);
 
-//Time Checking Thread 
-
-void checkTime() {
-
-	//Command Variables
-	string cProcess;
-	string command; 
-
-	//Timer Variables
-	time_t now;
-	struct tm killTime;
-	double seconds;
-
-	while (1) { //if time is equal to set time exit out of loop, otherwise wait
-		for (int i = 0; i < TaskList.size(); i++) {
-
-			killTime = *localtime(&now);
-
-			killTime.tm_hour = stoi(TaskList[i]->killTime_hr); killTime.tm_min = stoi(TaskList[i]->killTime_min); killTime.tm_sec = 0;
-			killTime.tm_mday = stoi(TaskList[i]->killTime_day);
-
-			TaskList[i]->identify();
-
-			seconds = difftime(now, mktime(&killTime));
-
-			if (seconds >= 0) { // Need to make the comparison, to a changeable variable set by user.
-				command = "taskkill /IM " + cProcess + " /F " + "/t";
-				system(command.c_str()); //Kill process at designated time. 
-				break;
-			}
-
-			//check every second
-			this_thread::sleep_for(1s);
-		}
-	}
-}
-
 cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), wxSize(800, 500) ) {
 	
 	wxArrayString tasks; 
 	tasks = execute("tasklist"); 
 
-	//Spawn Thread 
-	//thread thread_1(checkTime); 
+	//Start Periodic 1s Timer To Check Task Deadline
+	timer->Start(timerInterval, false); 
 
 	//Create horizontal sizer for entire GUI
 	wxBoxSizer* fullhbox = new wxBoxSizer(wxHORIZONTAL);
@@ -241,6 +207,45 @@ wxArrayString execute(const std::string& command)
 
 	return tasks;
 }
+
+
+//Time Checking 
+
+void checkTime() {
+
+	//Command Variables
+	string cProcess;
+	string command;
+
+	//Timer Variables
+	time_t now;
+	struct tm killTime;
+	double seconds;
+
+	while (1) { //if time is equal to set time exit out of loop, otherwise wait
+		for (int i = 0; i < TaskList.size(); i++) {
+
+			killTime = *localtime(&now);
+
+			killTime.tm_hour = stoi(TaskList[i]->killTime_hr); killTime.tm_min = stoi(TaskList[i]->killTime_min); killTime.tm_sec = 0;
+			killTime.tm_mday = stoi(TaskList[i]->killTime_day);
+
+			TaskList[i]->identify();
+
+			seconds = difftime(now, mktime(&killTime));
+
+			if (seconds >= 0) { // Need to make the comparison, to a changeable variable set by user.
+				command = "taskkill /IM " + cProcess + " /F " + "/t";
+				system(command.c_str()); //Kill process at designated time. 
+				break;
+			}
+
+			//check every second
+			this_thread::sleep_for(1s);
+		}
+	}
+}
+
 
 /*
 * virtual int wxListBox::FindString	(	const wxString & 	string,
