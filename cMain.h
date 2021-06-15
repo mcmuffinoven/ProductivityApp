@@ -1,4 +1,6 @@
 #pragma once
+
+#define _CRT_SECURE_NO_WARNINGS
 //Class Header Files
 #include "cThread.h"
 #include "Task.h"
@@ -16,7 +18,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <thread>
-
+#include <Windows.h>
 #include <fstream>
 #include <sstream>
 
@@ -41,23 +43,19 @@ public:
 	wxTextCtrl* tc_hr = nullptr;
 	wxTextCtrl* tc_min = nullptr; 
 
-
 	wxListBox* list = nullptr;
 	wxBoxSizer* sizer = nullptr;
 
-	wxTimer* timer = nullptr; 
+	wxTimer* timer = new wxTimer(this, 101);
 	
-	int nFieldWidth = 10;
-	int nFieldHeight = 10;
-	//wxButton** btn;
+	
+	
 
-	//int* nField = nullptr;
-	//bool bFirstClick = true;
-
-	//wxArrayString execute(const std::string& command);
+public: 
+	void checkTime();
 	void OnButtonClicked(wxCommandEvent& evt);
-	void checkTime(wxTimerEvent& WXUNUSED(event));
-	
+	void OnTimer(wxTimerEvent& wxEVT_TIMER);
+	wxArrayString execute(const std::string& command);
 	wxDECLARE_EVENT_TABLE();
 };
 

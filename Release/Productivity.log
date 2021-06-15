@@ -1,0 +1,10 @@
+﻿  cApp.cpp
+  cMain.cpp
+C:\Users\user\Documents\GitHub\ProductivityApp\cMain.cpp(233,21): warning C4018: '<': signed/unsigned mismatch
+  cThread.cpp
+  Task.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 978 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  Productivity.vcxproj -> C:\Users\user\Documents\GitHub\ProductivityApp\Release\Productivity.exe

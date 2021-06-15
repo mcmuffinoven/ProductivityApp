@@ -2,25 +2,27 @@
 #include "Task.h"
 #include "cThread.h"
 
+#define _CRT_SECURE_NO_WARNINGS
+
 wxBEGIN_EVENT_TABLE(cMain, wxFrame)
 EVT_BUTTON(10001, OnButtonClicked) //Link ID to a specific function
 
 //Timer Event
-EVT_TIMER(wxID_ANY, cMain::checkTime)  
+EVT_TIMER(101, cMain::OnTimer)  
 wxEND_EVENT_TABLE()
 
 //Create Vector of Tasks
 vector<Task*> TaskList; 
-
-wxArrayString execute(const std::string& command);
 
 cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), wxSize(800, 500) ) {
 	
 	wxArrayString tasks; 
 	tasks = execute("tasklist"); 
 
+	timer->SetOwner(this, 101);
+	this->Connect(timer->GetId(), wxEVT_TIMER, wxTimerEventHandler(cMain::OnTimer), NULL, this);
 	//Start Periodic 1s Timer To Check Task Deadline
-	timer->Start(timerInterval, false); 
+	timer->Start(500); 
 
 	//Create horizontal sizer for entire GUI
 	wxBoxSizer* fullhbox = new wxBoxSizer(wxHORIZONTAL);
@@ -149,7 +151,10 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 }
 
 cMain::~cMain() {
-	//delete[]btn; //Delete pointer of array to buttons to prevent memory leak 
+	if (timer->IsRunning())
+	{
+		timer->Stop();
+	}
 }
 
 void cMain::OnButtonClicked(wxCommandEvent& evt) {
@@ -173,7 +178,7 @@ void cMain::OnButtonClicked(wxCommandEvent& evt) {
 }
 
 
-wxArrayString execute(const std::string& command)
+wxArrayString cMain::execute(const std::string& command)
 {
 	wxArrayString tasks; 
 	system((command + " > temp.txt").c_str());
@@ -208,10 +213,12 @@ wxArrayString execute(const std::string& command)
 	return tasks;
 }
 
-
+//Timer event to call checkTime function
+void cMain::OnTimer(wxTimerEvent& wxEVT_TIMER){
+	checkTime();
+}
 //Time Checking 
-
-void checkTime() {
+void cMain::checkTime() {
 
 	//Command Variables
 	string cProcess;
@@ -219,39 +226,30 @@ void checkTime() {
 
 	//Timer Variables
 	time_t now;
-	struct tm killTime;
+	struct tm *killTime;
 	double seconds;
 
-	while (1) { //if time is equal to set time exit out of loop, otherwise wait
+	 //Iterate Through Task Vector
 		for (int i = 0; i < TaskList.size(); i++) {
+			time(&now);
+			killTime = localtime(&now);
+			cProcess = TaskList[i]->processName;
+			killTime->tm_hour = stoi(TaskList[i]->killTime_hr); killTime->tm_min = stoi(TaskList[i]->killTime_min); killTime->tm_sec = 0;
+			killTime->tm_mday = stoi(TaskList[i]->killTime_day);
 
-			killTime = *localtime(&now);
+			//TaskList[0]->identify();
 
-			killTime.tm_hour = stoi(TaskList[i]->killTime_hr); killTime.tm_min = stoi(TaskList[i]->killTime_min); killTime.tm_sec = 0;
-			killTime.tm_mday = stoi(TaskList[i]->killTime_day);
-
-			TaskList[i]->identify();
-
-			seconds = difftime(now, mktime(&killTime));
+			seconds = difftime(now, mktime(killTime));
 
 			if (seconds >= 0) { // Need to make the comparison, to a changeable variable set by user.
 				command = "taskkill /IM " + cProcess + " /F " + "/t";
-				system(command.c_str()); //Kill process at designated time. 
-				break;
+				system(command.c_str()); //Kill process at designated time.
+
+				wxString listString(cProcess.c_str(), wxConvUTF8);
+				list->Delete(list->FindString(listString));
+				delete TaskList[i];
+				return;
 			}
-
-			//check every second
-			this_thread::sleep_for(1s);
 		}
+		
 	}
-}
-
-
-/*
-* virtual int wxListBox::FindString	(	const wxString & 	string,
-bool 	caseSensitive = false 
-)		const
-
-if(task complete)
-	list->Delete(findstring(process name))
-*/
