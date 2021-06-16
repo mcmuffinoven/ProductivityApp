@@ -1,28 +1,33 @@
+//Project Header Files
 #include "cMain.h"
 #include "Task.h"
-#include "cThread.h"
 
 #define _CRT_SECURE_NO_WARNINGS
 
-wxBEGIN_EVENT_TABLE(cMain, wxFrame)
-EVT_BUTTON(10001, OnButtonClicked) //Link ID to a specific function
 
-//Timer Event
-EVT_TIMER(101, cMain::OnTimer)  
+wxBEGIN_EVENT_TABLE(cMain, wxFrame)
+	//Button Event
+	EVT_BUTTON(buttonEventID, submitTaskButton) //Link ID to a specific function
+
+	//Timer Event
+	EVT_TIMER(timerEventID, cMain::OnTimer)  
 wxEND_EVENT_TABLE()
 
-//Create Vector of Tasks
+//Create vector of Tasks
 vector<Task*> TaskList; 
 
 cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), wxSize(800, 500) ) {
 	
+	//Call function to get current running processes
 	wxArrayString tasks; 
-	tasks = execute("tasklist"); 
+	tasks = getProcesses("tasklist"); 
 
-	timer->SetOwner(this, 101);
+	//Initialize and setup 500ms timer
+	timer->SetOwner(this, timerEventID);
 	this->Connect(timer->GetId(), wxEVT_TIMER, wxTimerEventHandler(cMain::OnTimer), NULL, this);
-	//Start Periodic 1s Timer To Check Task Deadline
-	timer->Start(500); 
+
+	//Start periodic 500ms timer to check task deadline
+	timer->Start(timerInterval); 
 
 	//Create horizontal sizer for entire GUI
 	wxBoxSizer* fullhbox = new wxBoxSizer(wxHORIZONTAL);
@@ -43,10 +48,11 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	leftvbox->Add(st1, 0, wxEXPAND | wxTOP | wxRIGHT, 10);
 	rightvbox->Add(st2, 0, wxEXPAND | wxTOP | wxRIGHT, 10);
 
+	//Dropdown menu to display current running processes
+	process_dropdown = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, tasks, 0, wxDefaultValidator, _T("ID_COMBOBOX1"));
+	
 	//Create text boxes for user input
-
-	dropdown = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, tasks, 0, wxDefaultValidator, _T("ID_COMBOBOX1"));
-	//tc1 = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Process Name
+	
 	tc_day = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Day
 	tc_hr = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Hr
 	tc_min = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Min
@@ -55,7 +61,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	wxBoxSizer* righthbox1 = new wxBoxSizer(wxHORIZONTAL);
 
 	//Add process name text box to leftvbox
-	leftvbox->Add(dropdown, 0, wxEXPAND);
+	leftvbox->Add(process_dropdown, 0, wxEXPAND);
 
 	//Add the two text boxes into a horizontal sizer
 	righthbox1->Add(tc_day, 0, wxEXPAND | wxRIGHT, 10);
@@ -83,13 +89,15 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	//Add the second horizontal sizer into the rightvbox
 	rightvbox->Add(righthbox2, 0, wxEXPAND);
 
+	//Create list menu of scheduled tasks
+	scheduled_task_list = new wxListBox(this, wxID_ANY, wxPoint(-1, -1), wxSize(-1, -1)); //Scheduled Task, NEED TO REPLACE WITH TEXT BOX LATER TO SHOW SCHEDULED TASKS 
+	
 	//Create text boxes for user inpt
-	list = new wxListBox(this, wxID_ANY, wxPoint(-1, -1), wxSize(-1, -1)); //Scheduled Task, NEED TO REPLACE WITH TEXT BOX LATER TO SHOW SCHEDULED TASKS 
 	wxTextCtrl* tc_work = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Work time
 	wxTextCtrl* tc_rest = new wxTextCtrl(this, wxID_ANY, wxT(""), wxPoint(-1, -1), wxSize(-1, -1)); //Set Rest time
 
 	//Add the scheduled tasks box to the leftvbox
-	leftvbox->Add(list, 1, wxEXPAND);
+	leftvbox->Add(scheduled_task_list, 1, wxEXPAND);
 
 	//Create horizontal sizer to add the Work/Rest time textbox
 	wxBoxSizer* righthbox3 = new wxBoxSizer(wxHORIZONTAL);
@@ -114,7 +122,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	wxBoxSizer* rightthbox4 = new wxBoxSizer(wxHORIZONTAL);
 	
 	//Create submit button
-	wxButton* btn1 = new wxButton(this, 10001, wxT("Submit Task"));
+	wxButton* btn1 = new wxButton(this, buttonEventID, wxT("Submit Task"));
 
 	//Add button to horizontal sizer
 	rightthbox4->Add(btn1, 0);
@@ -131,23 +139,27 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Productivity App", wxPoint(30,30), 
 	//Create font class so we can set our text to this font
 	wxFont font(14, wxFONTFAMILY_ROMAN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false); 
 
-	dropdown->SetFont(font); 
+	//Set font of wx objects 
+	process_dropdown->SetFont(font); 
 	tc_day->SetFont(font);
 	tc_hr->SetFont(font);
 	tc_min->SetFont(font);
 	tc_work->SetFont(font);
 	tc_rest->SetFont(font);
+
+	//Button Font
 	btn1->SetFont(font);
 
+	//Text Font
 	st1->SetFont(font);
 	st2->SetFont(font);
 	st3->SetFont(font);
 	st4->SetFont(font);
 	st5->SetFont(font);
 
-	list->SetFont(font); 
-	//Wait for thread
-	//thread_1.join();
+	//List Font
+	scheduled_task_list->SetFont(font); 
+
 }
 
 cMain::~cMain() {
@@ -157,7 +169,8 @@ cMain::~cMain() {
 	}
 }
 
-void cMain::OnButtonClicked(wxCommandEvent& evt) {
+//Function to handle user submiting a task
+void cMain::submitTaskButton(wxCommandEvent& evt) {
 
 	string processName; 
 	string killTime_day; 
@@ -165,21 +178,25 @@ void cMain::OnButtonClicked(wxCommandEvent& evt) {
 	string killTime_min;
 
 	//Update scheduled tasks according to user input when submit button is pressed
-	processName = dropdown->GetValue(); 
+	processName = process_dropdown->GetValue(); 
 	killTime_day = tc_day->GetValue(); 
 	killTime_hr = tc_hr->GetValue(); 
 	killTime_min = tc_min->GetValue();
 
-	list->AppendString(processName);
+	//Update wxList object with processName 
+	scheduled_task_list->AppendString(processName);
 
-	TaskList.push_back(new Task(processName, killTime_day, killTime_hr, killTime_min)); //Create a new Task 
+	//Create a new task object and push into tasklist vector
+	TaskList.push_back(new Task(processName, killTime_day, killTime_hr, killTime_min)); 
 
-	evt.Skip(); //Event has been handeled. 
+	//Event has been handeled. 
+	evt.Skip(); 
 }
 
-
-wxArrayString cMain::execute(const std::string& command)
+//Function to get current running processes
+wxArrayString cMain::getProcesses(const std::string& command)
 {
+	//Output system command outputs to temp.txt
 	wxArrayString tasks; 
 	system((command + " > temp.txt").c_str());
 
@@ -188,10 +205,11 @@ wxArrayString cMain::execute(const std::string& command)
 
 	ifs.close(); // must close the inout stream so the file can be cleaned up
 
+	//Read file and parse first column 
 	vector<string> names;
 	ifstream infile("temp.txt");
 
-
+	//If file is not read return error 
 	if (!infile)
 	{
 		wxArrayString error;
@@ -205,11 +223,13 @@ wxArrayString cMain::execute(const std::string& command)
 		names.push_back(nm);
 	}
 
+	//Push process names to tasks wxarraystring
 	for (string s : names) {
-		wxString mystring(s);
-		tasks.Add(mystring); 
+		wxString processes(s);
+		tasks.Add(processes);
 	}
 
+	//Return arraystring to be pushed into wx dropdown menu
 	return tasks;
 }
 
@@ -230,10 +250,12 @@ void cMain::checkTime() {
 	double seconds;
 
 	 //Iterate Through Task Vector
+	if (!TaskList.empty()) {
 		for (int i = 0; i < TaskList.size(); i++) {
 			time(&now);
 			killTime = localtime(&now);
 			cProcess = TaskList[i]->processName;
+			//Set time of scheduler to scheduled time of task.
 			killTime->tm_hour = stoi(TaskList[i]->killTime_hr); killTime->tm_min = stoi(TaskList[i]->killTime_min); killTime->tm_sec = 0;
 			killTime->tm_mday = stoi(TaskList[i]->killTime_day);
 
@@ -246,10 +268,11 @@ void cMain::checkTime() {
 				system(command.c_str()); //Kill process at designated time.
 
 				wxString listString(cProcess.c_str(), wxConvUTF8);
-				list->Delete(list->FindString(listString));
-				delete TaskList[i];
+				scheduled_task_list->Delete(scheduled_task_list->FindString(listString));
+				//Remove ith task from beginning 
+				TaskList.erase(TaskList.begin() + i);
 				return;
 			}
 		}
-		
 	}
+}

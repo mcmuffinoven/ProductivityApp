@@ -8,6 +8,7 @@ cApp::cApp() {
 cApp::~cApp() {
 }
 
+//Startup function to launch GUI
 bool cApp::OnInit()
 {
 	m_frame1 = new cMain();

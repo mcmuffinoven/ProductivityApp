@@ -1,8 +1,7 @@
 #pragma once
 
 #define _CRT_SECURE_NO_WARNINGS
-//Class Header Files
-#include "cThread.h"
+//Project Header Files
 #include "Task.h"
 
 //wxWidget Headers
@@ -31,31 +30,30 @@ public:
 	~cMain();
 
 private: 
-	static const int timerInterval = 1000; //1s
-
+	static const int timerInterval = 500; //500ms
+	static const int buttonEventID = 101; 
+	static const int timerEventID = 100; 
 public:
 
-	//Define variables to be used. 
-	wxComboBox* dropdown = nullptr; 
+	//Define wx objects to be used
+	wxComboBox* process_dropdown = nullptr; 
 
 	wxTextCtrl* tc1 = nullptr; 
 	wxTextCtrl* tc_day = nullptr; 
 	wxTextCtrl* tc_hr = nullptr;
 	wxTextCtrl* tc_min = nullptr; 
 
-	wxListBox* list = nullptr;
+	wxListBox* scheduled_task_list = nullptr;
 	wxBoxSizer* sizer = nullptr;
 
-	wxTimer* timer = new wxTimer(this, 101);
+	wxTimer* timer = new wxTimer(this, timerEventID);
 	
-	
-	
-
+//Class methods 
 public: 
 	void checkTime();
-	void OnButtonClicked(wxCommandEvent& evt);
+	void submitTaskButton(wxCommandEvent& evt);
 	void OnTimer(wxTimerEvent& wxEVT_TIMER);
-	wxArrayString execute(const std::string& command);
+	wxArrayString getProcesses(const std::string& command);
 	wxDECLARE_EVENT_TABLE();
 };
 
