@@ -1,4 +1,4 @@
-# Welcome to my productivity app ✨![Project Image](.\Clock_icon.png)
+# Welcome to my productivity app ✨![Project Image](https://github.com/mcmuffinoven/ProductivityApp/blob/main/Clock_icon.png)
 
 
 > A wxWidget GUI based C++ productivity app to terminate scheduled apps to stop you from procrastinating.
