@@ -259,8 +259,6 @@ void cMain::checkTime() {
 			killTime->tm_hour = stoi(TaskList[i]->killTime_hr); killTime->tm_min = stoi(TaskList[i]->killTime_min); killTime->tm_sec = 0;
 			killTime->tm_mday = stoi(TaskList[i]->killTime_day);
 
-			//TaskList[0]->identify();
-
 			seconds = difftime(now, mktime(killTime));
 
 			if (seconds >= 0) { // Need to make the comparison, to a changeable variable set by user.
