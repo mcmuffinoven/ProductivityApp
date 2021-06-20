@@ -34,7 +34,7 @@ You're sections headers will be used to reference location of destination.
 
 #### Installation
 
-See the wxWidget [I'm an inline-style link](https://www.google.com) page for details. 
+See the [wxWidget](https://docs.wxwidgets.org/trunk/plat_msw_install.html) installation page for details. 
 
 
 ---
